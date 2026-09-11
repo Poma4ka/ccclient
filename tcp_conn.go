@@ -5,12 +5,13 @@ import (
 	"io"
 	"net"
 	"sync"
+	"sync/atomic"
 
 	"github.com/Poma4ka/ccclient/packet"
 )
 
 type TcpConn interface {
-	Open() error
+	Connect() error
 	Close() error
 
 	EnableEncryption(e Encrypter)
@@ -20,7 +21,7 @@ type TcpConn interface {
 	ReadPacket() (packet.Packet, error)
 }
 
-func OpenTcp(address string) TcpConn {
+func NewTcpConn(address string) TcpConn {
 	return &tcpConn{
 		address: address,
 	}
@@ -33,12 +34,13 @@ type tcpConn struct {
 	enc   Encrypter
 	encMu sync.RWMutex
 
-	wMu sync.Mutex
+	seqId atomic.Uint32
+	wMu   sync.Mutex
 
 	address string
 }
 
-func (c *tcpConn) Open() error {
+func (c *tcpConn) Connect() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -81,7 +83,7 @@ func (c *tcpConn) DisableEncryption() {
 	c.enc = nil
 }
 
-func (c *tcpConn) WritePacket(p packet.Packet) error {
+func (c *tcpConn) WritePacket(p packet.Packet) (err error) {
 	c.wMu.Lock()
 	defer c.wMu.Unlock()
 
@@ -96,6 +98,17 @@ func (c *tcpConn) WritePacket(p packet.Packet) error {
 	c.encMu.Lock()
 	enc := c.enc
 	c.encMu.Unlock()
+
+	seqPacket, ok := p.(packet.SeqPacket)
+	if ok {
+		seqPacket.SetSeqId(packet.SeqID(c.seqId.Load()))
+	}
+
+	defer func() {
+		if err == nil && seqPacket != nil {
+			c.seqId.Add(1)
+		}
+	}()
 
 	if enc == nil {
 		return WritePacket(conn, p)
