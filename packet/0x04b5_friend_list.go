@@ -18,7 +18,7 @@ type FriendInfo struct {
 	GuildName  string
 }
 
-func (p *FriendListPacket) GetPacketID() ID { return 0x03eb }
+func (p *FriendListPacket) GetPacketID() ID { return 0x04b5 }
 
 func (p *FriendListPacket) Marshal() ([]byte, error) {
 	return nil, nil

@@ -13,7 +13,7 @@ type PongPacket struct {
 	Field5    uint32
 }
 
-func (p *PongPacket) GetPacketID() ID { return 0x03eb }
+func (p *PongPacket) GetPacketID() ID { return 0x03ec }
 
 func (p *PongPacket) Marshal() ([]byte, error) {
 	buf := make([]byte, 20)

@@ -12,6 +12,10 @@ func (p *SeqGenericPacket) SetSeqId(seqId SeqID) {
 	p.SeqID = seqId
 }
 
+func (p *SeqGenericPacket) GetSeqId() SeqID {
+	return p.SeqID
+}
+
 func (p *SeqGenericPacket) Unmarshal(data []byte) error {
 	if len(data) < 4 {
 		return ErrDataTooShort

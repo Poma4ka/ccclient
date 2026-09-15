@@ -18,6 +18,8 @@ type Packet interface {
 type SeqPacket interface {
 	// SetSeqId - add seqId to packet, seqId starts from 0
 	SetSeqId(seqId SeqID)
+	// GetSeqId - return current packet seqId
+	GetSeqId() SeqID
 }
 
 type ID uint16
